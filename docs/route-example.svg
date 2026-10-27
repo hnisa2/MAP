@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
+<title id="title">MAP: Dijkstra fastest route example</title>
+<desc id="desc">The roads A C 10 and C E 40 are highlighted. The fastest route from A to E takes 50 minutes. Other roads: A B 30, B D 20, C D 50, D E 10.</desc>
+<rect width="1200" height="440" rx="22" fill="#0c172a"/>
+<text x="46" y="52" font-family="Arial,sans-serif" font-size="15" letter-spacing="3" fill="#70dfcf">MAP / JAVA GRAPH ALGORITHMS</text>
+<text x="46" y="105" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="#f4f7fb">Find the fastest way there.</text>
+<text x="46" y="143" font-family="Arial,sans-serif" font-size="18" fill="#a9b9d1">Bidirectional roads. Weighted edges. One shortest route.</text>
+<g stroke="#596b85" stroke-width="3" fill="none"><path d="M100 285 L310 215 L540 220 L720 315"/><path d="M315 365 L540 220"/></g>
+<path d="M100 285 L315 365 L720 315" stroke="#70dfcf" stroke-width="6" fill="none"/>
+<g fill="#cbd6e7" font-family="Arial,sans-serif" font-size="18"><text x="183" y="232">30</text><text x="417" y="205">20</text><text x="438" y="296">50</text><text x="634" y="260">10</text></g>
+<g fill="#70dfcf" font-family="Arial,sans-serif" font-size="18" font-weight="700"><text x="190" y="353">10</text><text x="510" y="369">40</text></g>
+<g stroke="#70dfcf" stroke-width="3" fill="#123b40"><circle cx="100" cy="285" r="25"/><circle cx="315" cy="365" r="25"/><circle cx="720" cy="315" r="25"/></g>
+<g stroke="#596b85" stroke-width="2" fill="#182840"><circle cx="310" cy="215" r="25"/><circle cx="540" cy="220" r="25"/></g>
+<g text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-size="19" font-weight="700"><text x="100" y="292">A</text><text x="310" y="222">B</text><text x="315" y="372">C</text><text x="540" y="227">D</text><text x="720" y="322">E</text></g>
+<rect x="820" y="194" width="330" height="198" rx="15" fill="#14273b" stroke="#284156"/>
+<text x="850" y="231" fill="#a9b9d1" font-family="Arial,sans-serif" font-size="14" letter-spacing="2">FASTEST ROUTE</text>
+<text x="850" y="277" fill="#70dfcf" font-family="Arial,sans-serif" font-size="31" font-weight="700">A → C → E</text>
+<text x="850" y="326" fill="#f4f7fb" font-family="Arial,sans-serif" font-size="36" font-weight="700">50 <tspan font-size="18" font-weight="400">minutes</tspan></text>
+<text x="850" y="363" fill="#a9b9d1" font-family="Arial,sans-serif" font-size="16">10 + 40 / static sample data</text>
+</svg>

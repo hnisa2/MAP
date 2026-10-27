@@ -1,0 +1,9 @@
+/build/
+/output.txt
+*.class
+*.jar
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
