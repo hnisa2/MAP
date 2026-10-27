@@ -1,9 +1,7 @@
-/build/
-/output.txt
 *.class
 *.jar
+output.txt
+build/
 .idea/
 *.iml
 .vscode/
-.DS_Store
-Thumbs.db

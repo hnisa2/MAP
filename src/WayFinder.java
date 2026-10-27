@@ -1,88 +1,107 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.FileWriter;
+import java.io.IOException;
+public class WayFinder {
+    private City[] cities;
+    private int[][] timeMatrix;
 
-/** Dijkstra's algorithm with the original project's adjacency-matrix approach. */
-public final class WayFinder {
-    private final City[] cities;
-    private final int[][] timeMatrix;
-    private final Map<String, Integer> indices = new HashMap<>();
+    public WayFinder(City[] cities, int[][] timeMatrix){
+        this.cities = cities;
+        this.timeMatrix = timeMatrix;
+    }
 
-    public WayFinder(City[] cities, int[][] timeMatrix) {
-        if (cities == null || timeMatrix == null || cities.length == 0
-                || cities.length != timeMatrix.length) {
-            throw new IllegalArgumentException("A non-empty square city matrix is required.");
+    private int getIndex(String cityName){
+        for (int i=0 ; i<cities.length ; i++){
+            if (cities[i].getCityName().equals(cityName)) return i;
         }
-        this.cities = cities.clone();
-        this.timeMatrix = new int[cities.length][];
-        for (int i = 0; i < cities.length; i++) {
-            if (cities[i] == null || cities[i].getIndex() != i
-                    || indices.put(cities[i].getCityName(), i) != null) {
-                throw new IllegalArgumentException("Cities need unique names and consecutive indices.");
-            }
-            if (timeMatrix[i] == null || timeMatrix[i].length != cities.length) {
-                throw new IllegalArgumentException("Travel-time matrix must be square.");
-            }
-            this.timeMatrix[i] = timeMatrix[i].clone();
-            for (int weight : timeMatrix[i]) {
-                if (weight != -1 && weight <= 0) {
-                    throw new IllegalArgumentException("Use positive minutes or -1 for absent roads.");
-                }
+        return -1;
+    }
+
+    private int getMinDistance(long[] distances, boolean[] visited){
+        long min = Long.MAX_VALUE;
+        int closestIndex = -1;
+
+        for (int i=0 ; i<cities.length ; i++){
+            if (!visited[i] && distances[i]<min){
+                min = distances[i];
+                closestIndex = i;
             }
         }
-        for (int i = 0; i < cities.length; i++) {
-            for (int j = 0; j < i; j++) {
-                if (timeMatrix[i][j] != timeMatrix[j][i]) {
-                    throw new IllegalArgumentException("Roads must be bidirectional.");
-                }
-            }
+        return closestIndex;
+    }
+
+    private void writeToFile(FileWriter wr, String output) {
+        try{
+            wr.write(output);
+        }
+        catch(IOException e){
+            System.out.println("Error");
         }
     }
 
-    public RouteResult findFastestRoute(String startCity, String endCity) {
-        Integer start = indices.get(startCity);
-        Integer end = indices.get(endCity);
-        if (start == null || end == null) {
-            throw new IllegalArgumentException("Start and destination must be declared cities.");
+    public void printPath(FileWriter wr, int[] previous, int start, int end){
+        if (end == -1){
+            return;
         }
-        long[] distance = new long[cities.length];
-        int[] previous = new int[cities.length];
-        boolean[] visited = new boolean[cities.length];
-        Arrays.fill(distance, Long.MAX_VALUE);
-        Arrays.fill(previous, -1);
-        distance[start] = 0;
-
-        for (int step = 0; step < cities.length; step++) {
-            int current = -1;
-            for (int i = 0; i < cities.length; i++) {
-                if (!visited[i] && distance[i] != Long.MAX_VALUE
-                        && (current == -1 || distance[i] < distance[current])) {
-                    current = i;
-                }
+        printPath(wr, previous, start, previous[end]);
+        try{
+            if (end!=start){
+                wr.write("->");
             }
-            // No reachable, unvisited vertex remains in this connected component.
-            if (current == -1 || current == end) { break; }
-            visited[current] = true;
-            for (int neighbor = 0; neighbor < cities.length; neighbor++) {
-                int minutes = timeMatrix[current][neighbor];
-                if (minutes > 0 && !visited[neighbor]) {
-                    long candidate = distance[current] + minutes;
-                    if (candidate < distance[neighbor]) {
-                        distance[neighbor] = candidate;
-                        previous[neighbor] = current;
+            wr.write(cities[end].getCityName());
+        }
+        catch(IOException e){
+            System.out.println("Error printing path stage");
+        }
+    }
+
+
+    public void findFastestRoute (String startCity, String endCity){
+        int startIndex = getIndex(startCity);
+        int endIndex = getIndex(endCity);
+
+        try (FileWriter wr = new FileWriter("output.txt")){
+            if (startIndex == -1 || endIndex == -1) {
+                System.out.println("Error. Invalid city.");
+                return;
+            }
+            boolean[] visited = new boolean[cities.length];
+            long[] distance = new long[cities.length]; //shortest
+            int[] previous = new int[cities.length];
+
+            for (int i = 0; i < cities.length; i++) {
+                visited[i] = false;
+                distance[i] = Long.MAX_VALUE;
+                previous[i] = -1;
+            }
+            distance[startIndex] = 0;
+
+            for (int i = 0; i < cities.length; i++) {
+                int current = getMinDistance(distance, visited);
+                if (current == -1) {
+                    break; // No more reachable cities.
+                }
+                visited[current] = true;
+
+                for (int n = 0; n < cities.length; n++) {
+                    if (timeMatrix[current][n]!=-1 && !visited[n]&&distance[current]!=Long.MAX_VALUE){
+                        long newDistance=distance[current]+timeMatrix[current][n];
+                        if (newDistance < distance[n]) {
+                            distance[n] = newDistance;
+                            previous[n] = current;
+                        }
                     }
                 }
             }
+
+            if (distance[endIndex] == Long.MAX_VALUE) {
+                writeToFile(wr, "No route found.");
+            } else {
+                printPath(wr, previous, startIndex, endIndex);
+                wr.write(" Total Time: " + distance[endIndex] + " minutes");
+            }
+            System.out.println("Check output.");
+        }catch(IOException e){
+            System.out.println("Error, structure");
         }
-        if (distance[end] == Long.MAX_VALUE) { return new RouteResult(List.of(), -1); }
-        List<String> path = new ArrayList<>();
-        for (int city = end; city != -1; city = previous[city]) {
-            path.add(cities[city].getCityName());
-        }
-        Collections.reverse(path);
-        return new RouteResult(path, distance[end]);
     }
 }

@@ -1,57 +1,33 @@
-# MAP — Fastest Route Finder
+# SE115 Maps
 
-This is a Java project I originally developed for my SE115 course. It reads cities and roads from a text file and uses Dijkstra's algorithm to find the fastest route between two cities.
+This is a Java project I made for my SE115 course. It reads a map from a text file and finds the fastest route between two cities using Dijkstra's algorithm.
 
-The program prints the route and its total travel time, then saves the result to a text file.
+Roads work in both directions, and their travel times are given in minutes. The result is written to `output.txt`.
 
-## How it works
+## Classes
 
-The map is represented as a graph:
-- Each city is a vertex.
-- Each road connects two cities in both directions.
-- Road weights represent travel time in minutes.
+- `City`: stores the name and index of a city.
+- `CountryMap`: reads the input file, checks the data, and creates the map.
+- `WayFinder`: finds the fastest route and writes the path and total time to a file.
 
-Dijkstra's algorithm calculates the shortest travel time. The program then follows the previous cities to reconstruct the route.
+The map is stored in a two-dimensional array. I used a previous-city array to keep track of the route, then a recursive method to write it in the correct order.
 
-## Project structure
+## How to run
 
-- `City.java` — stores a city's name and index.
-- `MapParser.java` — reads and validates the input.
-- `WayFinder.java` — implements Dijkstra's algorithm.
-- `RouteResult.java` — stores the calculated route and travel time.
-- `CountryMap.java` — handles command-line arguments and file output.
-- `tests/MapTests.java` — tests the algorithm, input validation, and file handling.
-
-## Running the project
-
-You need JDK 17 or newer.
-
-Clone the repository:
+You need a Java JDK installed. Run these commands from the project folder:
 
 ```sh
-git clone https://github.com/hnisa2/MAP.git
-cd MAP
+javac -d build src/City.java src/CountryMap.java src/WayFinder.java
+java -cp build CountryMap examples/map1.txt
 ```
 
-Compile the source files:
+After running the program, open `output.txt` to see the result.
 
-```sh
-javac --release 17 -d build/classes src/City.java src/RouteResult.java src/WayFinder.java src/MapParser.java src/CountryMap.java
-```
+## Input format
 
-Run the example:
+The file contains the number of cities, their names, the number of roads, the roads and their travel times, and finally the start and end cities.
 
-```sh
-java -cp build/classes CountryMap examples/sample-map.txt
-```
-
-The result is saved to `output.txt`. You can also choose an output file:
-
-```sh
-java -cp build/classes CountryMap examples/sample-map.txt build/route.txt
-```
-
-## Example input
+For example:
 
 ```text
 5
@@ -66,53 +42,23 @@ D E 10
 A E
 ```
 
-The input contains:
-1. The number of cities.
-2. The city names, separated by spaces.
-3. The number of roads.
-4. Each road in the format `City1 City2 TravelTime`.
-5. The start and destination cities.
-
-City names are case-sensitive, and travel times must be positive integers. If the same road appears more than once, the program uses the smallest travel time.
-
-### Output
+The output for this map is:
 
 ```text
 A->C->E Total Time: 50 minutes
 ```
 
-In this example, travelling from A to C takes 10 minutes and from C to E takes 40 minutes.
+City names are case-sensitive and cannot contain spaces. Travel times must be positive whole numbers. If there is no route between the two cities, the program writes `No route found.` to the output file.
 
-If the destination cannot be reached, the program outputs `No route found.` Invalid input produces an error message with the relevant line number.
-
-## Tests
-
-Compile and run the test suite:
-
-```sh
-javac --release 17 -Xlint:all -Werror -d build/classes src/City.java src/RouteResult.java src/WayFinder.java src/MapParser.java src/CountryMap.java tests/MapTests.java
-java -cp build/classes MapTests
-```
-
-The tests cover disconnected cities, invalid input, repeated roads, large travel times, and file output. They also compare results for 100 randomly generated graphs with a separate Floyd-Warshall implementation.
-
-GitHub Actions runs the tests on Windows and Linux with Java 17 and 21.
+You can also try `examples/disconnected-map.txt` or `examples/invalid-map.txt`.
 
 ## What I learned
 
-During the original project, I learned how to represent a graph with an adjacency matrix and implement Dijkstra's algorithm. I also practised reading and writing files, using command-line arguments, and handling invalid input.
+I initially tried to find the route without using an algorithm, but the code became complicated. Learning Dijkstra's algorithm helped me understand how to solve the problem step by step.
 
-One of the harder parts was reconstructing the route after finding the shortest travel time. Keeping track of the previous city helped me understand how the algorithm builds a path.
+I also practised reading and writing files, taking the input filename from command-line arguments, and checking invalid input. Reconstructing the route from the previous-city array was one of the parts I needed to work on.
 
-## Later improvements
-
-The original version used three classes: `City`, `CountryMap`, and `WayFinder`. This version separates input parsing and route results into their own classes.
-
-It also includes fixes for disconnected maps and integer overflow, along with examples and automated tests.
-
-The algorithm uses an adjacency matrix, so its time and storage complexity are both O(V²). This is suitable for small maps; an adjacency list and priority queue would be a useful next step for larger networks.
-
----
+This version keeps the original three-class structure. Small fixes were made later for invalid input, disconnected maps, and travel-time totals that exceed the `int` range.
 
 Hayrünisa Toprak  
 SE115 Course Project
