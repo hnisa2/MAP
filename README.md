@@ -1,47 +1,57 @@
-# MAP | Fastest Route Finder
+# MAP — Fastest Route Finder
 
-**A Java command-line application that finds the fastest route between cities using Dijkstra's algorithm.**
+This is a Java project I originally developed for my SE115 course. It reads cities and roads from a text file and uses Dijkstra's algorithm to find the fastest route between two cities.
 
-Built by **Hayrünisa Toprak** as an SE115 programming course project, then refined into a reproducible portfolio project. It turns a text-based road network into a route and total travel time, with explicit validation and automated correctness checks.
+The program prints the route and its total travel time, then saves the result to a text file.
 
-![Example road network: the highlighted route A to C to E takes 50 minutes](docs/route-example.svg)
+## How it works
 
-## Try it in a minute
+The map is represented as a graph:
+- Each city is a vertex.
+- Each road connects two cities in both directions.
+- Road weights represent travel time in minutes.
 
-Requires a **JDK 17 or newer**; no external libraries, package manager, or API keys.
+Dijkstra's algorithm calculates the shortest travel time. The program then follows the previous cities to reconstruct the route.
 
-Run from the repository root (the commands work in PowerShell, cmd, bash, and zsh):
+## Project structure
+
+- `City.java` — stores a city's name and index.
+- `MapParser.java` — reads and validates the input.
+- `WayFinder.java` — implements Dijkstra's algorithm.
+- `RouteResult.java` — stores the calculated route and travel time.
+- `CountryMap.java` — handles command-line arguments and file output.
+- `tests/MapTests.java` — tests the algorithm, input validation, and file handling.
+
+## Running the project
+
+You need JDK 17 or newer.
+
+Clone the repository:
 
 ```sh
 git clone https://github.com/hnisa2/MAP.git
 cd MAP
+```
+
+Compile the source files:
+
+```sh
 javac --release 17 -d build/classes src/City.java src/RouteResult.java src/WayFinder.java src/MapParser.java src/CountryMap.java
+```
+
+Run the example:
+
+```sh
 java -cp build/classes CountryMap examples/sample-map.txt
 ```
 
-```text
-A->C->E Total Time: 50 minutes
-Saved to <absolute path>/output.txt
-```
-
-The route is printed to the console and written to `output.txt`. Supply a second argument for a custom output file:
+The result is saved to `output.txt`. You can also choose an output file:
 
 ```sh
 java -cp build/classes CountryMap examples/sample-map.txt build/route.txt
 ```
 
-> This is a graph-algorithm project using static, user-supplied travel times. It does not use GPS, a live map service, or real-time traffic data.
-
-## What it demonstrates
-
-- **Graph modeling:** named cities and bidirectional, positively weighted roads.
-- **Algorithm implementation:** matrix-based Dijkstra, predecessor tracking, and path reconstruction.
-- **Separation of concerns:** parsing, route calculation, result formatting, and file I/O.
-- **Defensive input handling:** line-numbered errors, undeclared and duplicate city detection, missing-line checks, and positive travel-time validation.
-- **Correctness checks:** regression cases and 100 reproducible random graphs compared with an independent Floyd-Warshall implementation.
-- **Reproducible builds:** standard JDK commands and CI configured for Java 17/21 on Linux and Windows.
-
-## Input format
+## Example input
 
 ```text
 5
@@ -56,61 +66,53 @@ D E 10
 A E
 ```
 
-| Line | Meaning |
-| --- | --- |
-| 1 | Positive number of cities |
-| 2 | Unique, case-sensitive city names, separated by whitespace |
-| 3 | Non-negative number of road records |
-| Next records | `City1 City2 Minutes`, one road per line |
-| Final record | Start city and destination |
+The input contains:
+1. The number of cities.
+2. The city names, separated by spaces.
+3. The number of roads.
+4. Each road in the format `City1 City2 TravelTime`.
+5. The start and destination cities.
 
-Each road can be traveled in either direction. Travel time is an integer from 1 to 2,147,483,647 minutes; route totals use `long`. For repeated roads, the smallest time is retained. Names cannot contain whitespace. Blank required lines are rejected; trailing blank lines are allowed.
+City names are case-sensitive, and travel times must be positive integers. If the same road appears more than once, the program uses the smallest travel time.
 
-In this example, **A → C → E = 10 + 40 = 50 minutes**. The alternative A → B → D → E takes 60 minutes.
+### Output
 
-## Failure behavior
+```text
+A->C->E Total Time: 50 minutes
+```
 
-| Situation | Behavior | Exit code |
-| --- | --- | --- |
-| Route found | Prints and saves route and total time | `0` |
-| No connecting route | Prints and saves `No route found.` | `2` |
-| Invalid input, arguments, or file access | Prints an error to stderr | `1` |
+In this example, travelling from A to C takes 10 minutes and from C to E takes 40 minutes.
 
-Try `examples/disconnected-map.txt` and `examples/invalid-map.txt` to see both cases. An invalid input does not replace an existing output file, so always check the exit code before using a result. Input and output cannot refer to the same file.
+If the destination cannot be reached, the program outputs `No route found.` Invalid input produces an error message with the relevant line number.
 
-## Run the tests
+## Tests
+
+Compile and run the test suite:
 
 ```sh
 javac --release 17 -Xlint:all -Werror -d build/classes src/City.java src/RouteResult.java src/WayFinder.java src/MapParser.java src/CountryMap.java tests/MapTests.java
 java -cp build/classes MapTests
 ```
 
-The suite checks the report example, reverse travel, isolated cities, disconnected networks, same-city queries, parallel roads, whitespace, malformed inputs, large route totals, and CLI file behavior. Randomized checks validate both shortest travel times and the actual reconstructed paths.
+The tests cover disconnected cities, invalid input, repeated roads, large travel times, and file output. They also compare results for 100 randomly generated graphs with a separate Floyd-Warshall implementation.
 
-## Design
+GitHub Actions runs the tests on Windows and Linux with Java 17 and 21.
 
-```text
-UTF-8 input → MapParser → WayFinder → RouteResult → CountryMap → console + output file
-                           ↑
-                          City
-```
+## What I learned
 
-| Component | Responsibility |
-| --- | --- |
-| `City` | Immutable city name and matrix index |
-| `MapParser` | Parse and validate a map with line-specific diagnostics |
-| `WayFinder` | Calculate shortest routes without file I/O |
-| `RouteResult` | Immutable path, reachability, total time, and text formatting |
-| `CountryMap` | CLI arguments, UTF-8 file I/O, and exit codes |
+During the original project, I learned how to represent a graph with an adjacency matrix and implement Dijkstra's algorithm. I also practised reading and writing files, using command-line arguments, and handling invalid input.
 
-The adjacency matrix and linear minimum selection give **O(V²) time and O(V²) storage**, where V is the number of cities. This keeps the original course project's approach understandable, but makes the application suitable for small educational maps. A large sparse road network would benefit from adjacency lists and a priority queue.
+One of the harder parts was reconstructing the route after finding the shortest travel time. Keeping track of the previous city helped me understand how the algorithm builds a path.
 
-## Project background
+## Later improvements
 
-The original project report describes the `City`, `CountryMap`, and `WayFinder` classes, a bidirectional travel-time matrix, Dijkstra's algorithm, and the 50-minute sample route. The current implementation preserves that foundation.
+The original version used three classes: `City`, `CountryMap`, and `WayFinder`. This version separates input parsing and route results into their own classes.
 
-The portfolio revision adds a separate parser and result object, fixes disconnected-network and integer-overflow failures, makes path reconstruction iterative, and adds tests, examples, documentation, and CI. These improvements are subsequent work, rather than claims about the original course submission.
+It also includes fixes for disconnected maps and integer overflow, along with examples and automated tests.
 
-Read the [technical project overview](docs/project-overview.md) for the algorithm, tradeoffs, and development history.
+The algorithm uses an adjacency matrix, so its time and storage complexity are both O(V²). This is suitable for small maps; an adjacency list and priority queue would be a useful next step for larger networks.
 
-**Author:** [Hayrünisa Toprak](https://github.com/hnisa2)
+---
+
+Hayrünisa Toprak  
+SE115 Course Project
